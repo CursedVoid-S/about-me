@@ -4,10 +4,192 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Website Saya</title>
+<style>
+  :root{
+    --pink: #ffb6d9;
+    --lavender: #c9b6ff;
+    --sky: #b6e0ff;
+    --ink: #3a2e4d;
+    --card: rgba(255,255,255,0.55);
+  }
+  *{ box-sizing: border-box; }
+  html,body{
+    margin:0; height:100%; overflow:hidden;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(120deg, var(--sky), var(--lavender), var(--pink));
+    background-size: 300% 300%;
+    animation: bgShift 12s ease-in-out infinite;
+  }
+  @keyframes bgShift{
+    0%{ background-position: 0% 50%; }
+    50%{ background-position: 100% 50%; }
+    100%{ background-position: 0% 50%; }
+  }
+
+  /* sambaran petir */
+  .bolt{
+    position: fixed;
+    top: 0;
+    font-size: 42px;
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    filter: drop-shadow(0 0 12px #fff) drop-shadow(0 0 20px #c9b6ff);
+    animation: strike 0.5s ease-out forwards;
+  }
+  @keyframes strike{
+    0%{ opacity: 0; transform: translateY(-15vh) scaleY(0.6); }
+    12%{ opacity: 1; transform: translateY(0) scaleY(1.1); }
+    22%{ opacity: 0.2; }
+    32%{ opacity: 1; }
+    100%{ opacity: 0; transform: translateY(5vh) scaleY(1); }
+  }
+  .flash{
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    opacity: 0;
+    pointer-events: none;
+    animation: flashAnim 0.4s ease-out forwards;
+  }
+  @keyframes flashAnim{
+    0%{ opacity: 0; }
+    8%{ opacity: 0.55; }
+    100%{ opacity: 0; }
+  }
+
+  .stage{
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .view{
+    position: absolute;
+    text-align: center;
+    background: var(--card);
+    backdrop-filter: blur(6px);
+    padding: 40px 32px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(80,50,110,0.25);
+    max-width: 340px;
+    width: 85%;
+    opacity: 0;
+    transform: scale(0.85);
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .view.active{
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  h1{ margin: 0 0 12px; font-size: 26px; }
+  p{ margin: 6px 0; line-height: 1.5; }
+
+  button{
+    margin-top: 18px;
+    padding: 12px 26px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--pink), var(--lavender));
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(150,90,200,0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button:hover{ transform: translateY(-2px); }
+  button:active{
+    transform: scale(0.9);
+    box-shadow: 0 2px 6px rgba(150,90,200,0.35);
+  }
+
+  /* efek ripple pas diklik */
+  .ripple{
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.7);
+    transform: scale(0);
+    animation: rippleAnim 0.6s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes rippleAnim{
+    to{ transform: scale(3); opacity: 0; }
+  }
+</style>
 </head>
 <body>
-<h1>Hallo teman-teman!</h1>
-<p>selamat datang di website saya</p>
-<a href="about.html">about me →</a>
+
+<audio id="bgm" src="yokoso.mp3" loop></audio>
+
+<div class="stage" id="stage">
+  <div class="view active" id="home">
+    <h1>Hallo teman-teman!</h1>
+    <p>selamat datang di website saya</p>
+    <button onclick="goTo('about', event)">about me →</button>
+  </div>
+
+  <div class="view" id="about">
+    <h1>about me 🍥</h1>
+    <p>saya Endi Wira Maulana</p>
+    <p>siswa kelas XII TKJ B</p>
+    <p>hobi saya menonton anime</p>
+    <button onclick="goTo('home', event)">← back</button>
+  </div>
+</div>
+
+<script>
+  // sambaran petir muncul acak, seperti petir asli (tidak beraturan)
+  function spawnBolt(){
+    const b = document.createElement('div');
+    b.className = 'bolt';
+    b.textContent = '⚡';
+    b.style.left = (5 + Math.random()*85) + 'vw';
+    document.body.appendChild(b);
+
+    const f = document.createElement('div');
+    f.className = 'flash';
+    document.body.appendChild(f);
+
+    setTimeout(() => { b.remove(); f.remove(); }, 500);
+  }
+  function loopBolt(){
+    spawnBolt();
+    setTimeout(loopBolt, 900 + Math.random()*2200);
+  }
+  loopBolt();
+
+  function ripple(e){
+    const r = document.createElement('span');
+    r.className = 'ripple';
+    const size = 20;
+    r.style.width = r.style.height = size + 'px';
+    r.style.left = (e.clientX - size/2) + 'px';
+    r.style.top = (e.clientY - size/2) + 'px';
+    document.body.appendChild(r);
+    setTimeout(() => r.remove(), 600);
+  }
+
+  function goTo(id, e){
+    ripple(e);
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    const audio = document.getElementById('bgm');
+    if(id === 'about'){
+      audio.currentTime = 0;
+      audio.play().catch(()=>{ /* browser mungkin blokir autoplay, itu wajar */ });
+    } else {
+      audio.pause();
+    }
+  }
+</script>
+
 </body>
 </html>
